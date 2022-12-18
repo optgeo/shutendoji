@@ -67,8 +67,8 @@ fetch(URL, {method:"HEAD"}).then(resp => {
   map.on('contextmenu', (e) => {
     for (f of hovers) {
       const url = `https://mapps.gsi.go.jp/map-lib-api/` + 
-        `apiContentsView.do?specificationId=${f.properties.ID}`
-      //window.open(url, '_blank')
+        `contentsImage.do?specificationId=${f.properties.ID}&dispType=1`
+      window.open(url, '_blank')
       console.log(url)
     }
   })
