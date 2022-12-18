@@ -207,10 +207,37 @@ layers:
         - - exponential
           - 2
         - - zoom
-        - 0
         - 2
-        - 21
+        - 8
+        - 16
         - 128
+      heatmap-opacity: 0.5
+      heatmap-weight: 2
+  - type: symbol
+    id: text
+    source: pp
+    source-layer: pp
+    minzoom: 16
+    layout:
+      text-field: 
+        - get
+        - 撮影年月日
+      text-anchor: center
+      text-size:
+        - interpolate
+        - - exponential
+          - 2
+        - - zoom
+        - 16
+        - 10
+        - 22
+        - 80
+      text-font:
+        - $regular-font
+    paint:
+      text-halo-width: 2
+      text-halo-color: black 
+      text-color: white
 # annotations and symbols
   - !!inc/file layers/anno-symbol-allow-overlap.yml
   - !!inc/file layers/anno-route-number.yml
