@@ -1,0 +1,102 @@
+<html>
+<head>
+<title></title>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" crossorigin="anonymous">
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/pmtiles@2.4.0/dist/index.js"></script>
+<script src="https://unpkg.com/protomaps-themes-base@1.1.0/dist/index.js"></script>  
+<style>
+body { margin: 0; }
+#map { height:100%; width:100%; }
+#overlay { position: absolute; top: 1rem;
+  left: 1rem; font:  600 16px sans-serif;
+  background-color: white; border-radius: 4px;
+  padding: 0.5rem; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="overlay">
+<script type="text/javascript">
+let protocol = new pmtiles.Protocol()
+maplibregl.addProtocol("pmtiles",protocol.tile)
+
+let URL = "https://optgeo.github.io/tansei-reentry/tiles.pmtiles"
+
+function formatBytes(a,b=2){if(!+a)return"0 Bytes";const c=0>b?0:b,d=Math.floor(Math.log(a)/Math.log(1024));return`${parseFloat((a/Math.pow(1024,d)).toFixed(c))} ${["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"][d]}`}
+
+fetch(URL, {method:"HEAD"}).then(resp => {
+  let length = resp.headers.get("Content-Length")
+  document.getElementById("overlay").innerHTML = `<a href="${URL}">${URL}</a> (${formatBytes(length)})`
+
+  const map = new maplibregl.Map({
+    center: [137.889404, 35.218697],
+    zoom: 13,
+    maxZoom: 16,
+    container: 'map',
+    hash: true,
+    style: 'style.json'
+  })
+
+  let hovers = []
+  const N = 2
+  map.on('mousemove', (e) => {
+    let features = map.queryRenderedFeatures(e.point, {
+      layers: ['grid']
+    })
+    mouseout()
+    let n = 0
+    for (f of features) {
+      mouseover(f)
+      n++
+      if (n == N) break
+    }
+  })
+  map.on('mouseout', (e) => {
+    mouseout()
+  })
+  map.on('click', (e) => {
+    for (f of hovers) {
+      const url = `https://viewer.copc.io/?copc=` +
+        `https://x.optgeo.org/tansei3/` +
+        `${f.properties.grid}.copc.laz`
+      window.open(url, '_blank')
+    }
+  })
+  map.on('contextmenu', (e) => {
+    for (f of hovers) {
+      const url = 
+        `https://x.optgeo.org/tansei3/` +
+        `${f.properties.grid}.copc.laz`
+      window.open(url, '_blank')
+    }
+  })
+  mouseout = () => {
+    for (f of hovers) {
+      map.getCanvasContainer().style.cursor = 'default'
+      map.setFeatureState({
+        source: f.source,
+        sourceLayer: f.sourceLayer,
+        id: f.properties.grid
+      }, {
+        hover: false
+      })
+    }
+    hovers = []
+  }
+  mouseover = (f) => {
+    hovers.push(f)
+    map.getCanvasContainer().style.cursor = 'pointer'
+    map.setFeatureState({
+      source: f.source,
+      sourceLayer: f.sourceLayer,
+      id: f.properties.grid
+    }, {
+      hover: true
+    })
+  }
+})
+</script>
+</body>
+</html>
